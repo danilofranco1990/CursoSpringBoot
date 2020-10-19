@@ -7,12 +7,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.websocket.OnOpen;
 
+import org.hibernate.annotations.ManyToAny;
 import org.springframework.beans.factory.annotation.Autowired;
 import antlr.collections.List;
 
@@ -46,9 +48,24 @@ public class Pessoa implements Serializable {
 	private String cidade;
 	private String uf;
 	private String ibge;
+	private String sexopessoa;
 	
+	@ManyToOne
+	private Profissao profissao;
 	
+	public void setProfissao(Profissao profissao) {
+		this.profissao = profissao;
+	}
+	public Profissao getProfissao() {
+		return profissao;
+	}
 	
+	public String getSexopessoa() {
+		return sexopessoa;
+	}
+	public void setSexopessoa(String sexopessoa) {
+		this.sexopessoa = sexopessoa;
+	}
 	
 	public String getCep() {
 		return cep;

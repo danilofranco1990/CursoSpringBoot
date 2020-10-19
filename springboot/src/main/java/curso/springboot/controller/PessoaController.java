@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import org.springframework.web.servlet.ModelAndView;
 import curso.springboot.model.Pessoa;
 import curso.springboot.model.Telefone;
 import curso.springboot.repository.PessoaRepository;
+import curso.springboot.repository.ProfissaoRepository;
 import curso.springboot.repository.TelefoneRepository;
 
 @Controller
@@ -32,6 +35,12 @@ public class PessoaController {
 	
 	@Autowired
 	private TelefoneRepository telefoneRepository;
+	
+	@Autowired
+	private ReportUtil reportUtil;
+	
+	@Autowired
+	private ProfissaoRepository profisaoRepository;
 
 	@RequestMapping(method = RequestMethod.GET, value = "/cadastropessoa")
 	public ModelAndView inicio() {
@@ -39,6 +48,7 @@ public class PessoaController {
 		Iterable<Pessoa> pessoasIt = pessoaRepository.findAll();
 		modelAndView.addObject("pessoas", pessoasIt);
 		modelAndView.addObject("pessoaobj", new Pessoa());
+		modelAndView.addObject("profissoes",profisaoRepository.findAll());
 		return modelAndView;
 	}
 
@@ -53,22 +63,27 @@ public class PessoaController {
 			modelAndView.addObject("pessoas", pessoasIt);
 			modelAndView.addObject("pessoaobj", pessoa);
 			
+
+			
 			List<String> msg = new ArrayList<String>();
 			for(ObjectError objectError : bindingResult.getAllErrors()) {
 				msg.add(objectError.getDefaultMessage());// Vem das anotações @Empty @NotNull
 			}
 			modelAndView.addObject("msg", msg);
 			
+
+			modelAndView.addObject("profissoes",profisaoRepository.findAll());
 			return modelAndView;
 
 		}
 		pessoaRepository.save(pessoa);
+		
 
 		ModelAndView andView = new ModelAndView("cadastro/cadastropessoa");
 		Iterable<Pessoa> pessoasIt = pessoaRepository.findAll();
 		andView.addObject("pessoas", pessoasIt);
 		andView.addObject("pessoaobj", new Pessoa());
-
+		andView.addObject("profissoes",profisaoRepository.findAll());
 		return andView;
 	}
 
@@ -89,6 +104,7 @@ public class PessoaController {
 
 		ModelAndView modelAndView = new ModelAndView("cadastro/cadastropessoa");
 		modelAndView.addObject("pessoaobj", pessoa.get());
+		modelAndView.addObject("profissoes",profisaoRepository.findAll());
 		return modelAndView;
 	}
 
@@ -105,11 +121,57 @@ public class PessoaController {
 	}
 	
 	@PostMapping("**/pesquisarpessoa")
-	public ModelAndView pesquisar(@RequestParam("nomepesquisa") String nomepesquisa) {
+	public ModelAndView pesquisar(@RequestParam("nomepesquisa") String nomepesquisa, @RequestParam("pesqsexo") String pesqsexo){
+		
+		List<Pessoa> pessoas = new ArrayList<Pessoa>();	
+		
+		if(pesqsexo != null && !pesqsexo.isEmpty()){
+			pessoas = pessoaRepository.findPessoaByNameSexo(nomepesquisa, pesqsexo);
+		}else {
+			pessoas = pessoaRepository.findPessoaByName(nomepesquisa);
+		}
+		
 		ModelAndView modelAndView = new ModelAndView("cadastro/cadastropessoa");
-		modelAndView.addObject("pessoas",pessoaRepository.findPessoaByName(nomepesquisa));
+		modelAndView.addObject("pessoas",pessoas);
 		modelAndView.addObject("pessoaobj", new Pessoa());
 		return modelAndView;
+	}
+	
+	@GetMapping("**/pesquisarpessoa")
+	public void imprimePdf(@RequestParam("nomepesquisa") String nomepesquisa, @RequestParam("pesqsexo") String pesqsexo, HttpServletRequest request, HttpServletResponse response) throws Exception{
+	List<Pessoa> pessoas = new ArrayList<Pessoa>();
+	
+	if(pesqsexo != null && !pesqsexo.isEmpty() && nomepesquisa != null && !nomepesquisa.isEmpty()) {
+		pessoas = pessoaRepository.findPessoaByNameSexo(nomepesquisa, pesqsexo);
+		}
+	else if(nomepesquisa != null && !nomepesquisa.isEmpty()) {
+		pessoas = pessoaRepository.findPessoaByName(nomepesquisa);
+	}else{
+		Iterable<Pessoa> iterator = pessoaRepository.findAll();
+		for (Pessoa pessoa : iterator) {
+			pessoas.add(pessoa);
+		}
+	}
+	
+	//Chamar o serviço que faz a geração do relatório
+	byte[] pdf = reportUtil.gerarRelatorio(pessoas, "pessoa", request.getServletContext());
+	
+	//Tamanho da resposta
+	
+	response.setContentLength(pdf.length);
+	
+	//Definir na reposta o tipo de arquivo
+	response.setContentType("application/octet-stream");
+	
+	//Cabeçalho da resposta
+	
+	String headerKey = "Content-Disposition";
+	String headerValue = String.format("attachment; filename=\"%s\"", "relatorio.pdf");
+	response.setHeader(headerKey, headerValue);
+	
+	//Finaliza a reposta pro navegador
+	response.getOutputStream().write(pdf);
+		
 	}
 	
 	@GetMapping("/telefones/{idpessoa}")

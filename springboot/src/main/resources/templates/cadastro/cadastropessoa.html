@@ -65,21 +65,40 @@ input[type="submit"] {
 
 			<div class="row"
 				sec:authorize="hasAnyRole('ROLE_CAIXA','ROLE_ADMIN')">
-				<div class="input-field col s12">
+				<div class="input-field col s6">
 					<label for="sobrenome" class="active">Sobrenome</label> <input
 						name="sobrenome" th:field="*{sobrenome}" id="sobrenome"
 						class="validate" required="required">
 				</div>
+				
+				<div  class="input-field col s6">
+				<label for = "sexopessoa" class = "active">Sexo</label>
+				<select class = "browser-default" th:field = "*{sexopessoa}">
+				<option value = "" disabled selected>--[Selecione]--</option>
+				<option value = "MASCULINO" th:text = "Masculino"/>
+				<option value = "FEMININO" th:text = "Feminino"/>								
+				</select>
+				</div>
+				
 			</div>
 
 			<div class="row">
-				<div class="input-field col s12">
+				<div class="input-field col s6">
 					<label for="idade" class="active">Idade</label> <input name="idade"
 						th:field="*{idade}" id="idade" class="validate"
 						required="required">
 				</div>
+				
+				<div  class="input-field col s6">
+				<label for = "profissao" class = "active">Profissão</label>
+				<select class = "browser-default" th:field = "*{profissao}" id = "profissao">
+				<option th:each = "p : ${profissoes}" th:value = "${p.id}" th:text="${p.nome}">						
+				</select>
+				</div>
+			
 			</div>
 			
+
 			<div class="row">
 				<div class="input-field col s12">
 					<label for="cep" class="active">Cep</label> <input name="cep"
@@ -135,21 +154,36 @@ input[type="submit"] {
 	</div>
 	</br>
 
-
+	<fieldset>
+	<legend> Campos de Pesquisa</legend>
 	<div class="row">
-		<form action="pesquisarpessoa" method="post" class="col s12">
+		<form action="pesquisarpessoa" id= "pesquisarpessoa" method="post" class="col s12">
 			<div class="row">
-				<div class="input-field col s12">
-					<label for="nomepesquisa" class="active"> Pesquisa por
-						nome: </label> <input name="nomepesquisa" id="nomepesquisa"
-						class="validate"> <input
-						class="waves-effect waves-light btn" type="submit" value="Buscar">
+			
+				<div class="input-field col s6">
+					<label for="nomepesquisa" class="active"> Pesquisa por nome: </label> 
+					<input name="nomepesquisa" id="nomepesquisa"class="validate">
+					 </div>
+					 
+					 <div class="input-field col s6">
+					 <label for = "pesqsexo" class="active">Pesquisa Sexo</label>
+				<select class = "browser-default" name = "pesqsexo" id = "pesqsexo">
+				<option value = "">--[Todos]--</option>
+				<option value = "MASCULINO" th:text = "Masculino"/>
+				<option value = "FEMININO" th:text = "Feminino"/>								
+				</select>
+					 </div>
+					 
+					 <div class="input-field col s12">		
+					 <input class="waves-effect waves-light btn" type="submit" value="PDF" onclick="document.getElementById('pesquisarpessoa').method = 'get'">					 			 
+					<input class="waves-effect waves-light btn" type="submit" value="Buscar">
 					<a class="waves-effect waves-light btn" href="/listapessoas">Listar
 						Pessoas</a>
 				</div>
 			</div>
 		</form>
 	</div>
+	</fieldset>
 
 	</br>
 	</br>
