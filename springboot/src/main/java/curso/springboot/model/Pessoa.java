@@ -1,14 +1,20 @@
 package curso.springboot.model;
 
 import java.io.Serializable;
+import java.sql.Date;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -16,6 +22,8 @@ import javax.websocket.OnOpen;
 
 import org.hibernate.annotations.ManyToAny;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import antlr.collections.List;
 
 @Entity // Toda Tabela que será criada no banco de dados tem que ser anotada com a anotação @Entity
@@ -52,6 +60,38 @@ public class Pessoa implements Serializable {
 	
 	@ManyToOne
 	private Profissao profissao;
+	
+	@Enumerated(EnumType.STRING)
+	private Cargo cargo;
+	
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@Temporal(TemporalType.DATE)
+	private java.util.Date dataNascimento;
+	
+	@Lob
+	private byte[] curriculo;
+	
+	public void setCurriculo(byte[] curriculo) {
+		this.curriculo = curriculo;
+	}
+	
+	public byte[] getCurriculo() {
+		return curriculo;
+	}
+	
+	public void setDataNascimento(java.util.Date dataNascimento) {
+		this.dataNascimento = dataNascimento;
+	}
+	public java.util.Date getDataNascimento() {
+		return dataNascimento;
+	}
+	public void setCargo(Cargo cargo) {
+		this.cargo = cargo;
+	}
+	
+	public Cargo getCargo() {
+		return cargo;
+	}
 	
 	public void setProfissao(Profissao profissao) {
 		this.profissao = profissao;
